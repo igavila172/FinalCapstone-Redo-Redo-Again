@@ -152,8 +152,7 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
     @Override
     public Product update(int productId, Product product)
     {
-        String sql = "UPDATE products SET name = ?, price = ?, category_id = ?, description = ?, color = ?, image_url = ?, stock = ?, featured = ? WHERE product_id = ?;";
-
+        String sql = "UPDATE products SET name = ?, price = ?, category_id = ?, description = ?, color = ?, image_url = ?, stock = ?, featured = ? WHERE product_id = ?";
         try (Connection connection = getConnection())
         {
             PreparedStatement statement = connection.prepareStatement(sql);
@@ -174,8 +173,10 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
             throw new RuntimeException(e);
         }
 
+        // Fetch and return the updated product
         return getById(productId);
     }
+
 
     @Override
     public void delete(int productId)
