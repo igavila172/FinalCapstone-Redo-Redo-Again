@@ -39,18 +39,55 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
         return categories;
     }
 
-
     @Override
     public Category getById(int categoryId)
     {
-        // get category by id
+        String sql = "SELECT * FROM categories WHERE category_id = ?";
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(sql))
+        {
+            statement.setInt(1, categoryId);
+            try (var resultSet = statement.executeQuery())
+            {
+                if (resultSet.next())
+                {
+                    return mapRow(resultSet);
+                }
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public Category create(Category category)
     {
-        // create a new category
+        String sql = "INSERT INTO categories (name, description) VALUES (?, ?)";
+
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS))
+        {
+            statement.setString(1, category.getName());
+            statement.setString(2, category.getDescription());
+            statement.executeUpdate();
+
+            // Get the generated id
+            try (var keys = statement.getGeneratedKeys())
+            {
+                if (keys.next())
+                {
+                    int id = keys.getInt(1);
+                    return getById(id);
+                }
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
         return null;
     }
 
@@ -78,11 +115,20 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
         return getById(categoryId);
     }
 
-
     @Override
     public void delete(int categoryId)
     {
-        // delete category
+        String sql = "DELETE FROM categories WHERE category_id = ?";
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(sql))
+        {
+            statement.setInt(1, categoryId);
+            statement.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private Category mapRow(ResultSet row) throws SQLException
